@@ -17,6 +17,7 @@ package org.jbpm.designer.client;
 
 import java.util.Map;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
@@ -108,7 +109,11 @@ public class DesignerPresenter
     @Inject
     private DesignerEditorParametersPublisher designerEditorParametersPublisher;
 
-    private DesignerView view;
+    @Inject
+    private Event<NotificationEvent> notificationEvent;
+
+    private DesignerView             view;
+    private Overview                 overview;
 
     @Inject
     public DesignerPresenter( final DesignerView view ) {
@@ -599,6 +604,9 @@ public class DesignerPresenter
     private void setup( Map<String, String> editorParameters,
                         String editorID,
                         Overview overview ) {
+
+        this.overview = overview;
+
         if ( editorParameters != null ) {
 
             resetEditorPages( overview );
@@ -614,8 +622,20 @@ public class DesignerPresenter
     }
 
     protected void save() {
+
+        view.showSaving();
+
         ObservablePath latestPath = versionRecordManager.getPathToLatest();
         view.raiseEventCheckSave( latestPath.toURI() );
+        assetService.call( new RemoteCallback<Void>() {
+            @Override
+            public void callback( final Void aVoid ) {
+                view.hideBusyIndicator();
+                notificationEvent.fire( new NotificationEvent( "ProjectEditorResources.CONSTANTS.SaveSuccessful( pathToPomXML.getFileName() )",
+                                                               NotificationEvent.NotificationType.SUCCESS ) );
+            }
+        } ).updateMetadata( latestPath,
+                                            overview.getMetadata() );
     }
 
     public void reload() {

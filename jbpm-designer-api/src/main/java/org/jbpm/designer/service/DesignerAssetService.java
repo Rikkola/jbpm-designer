@@ -15,6 +15,8 @@
 
 package org.jbpm.designer.service;
 
+import org.guvnor.common.services.shared.metadata.model.Metadata;
+import org.guvnor.common.services.shared.metadata.model.Overview;
 import org.jboss.errai.bus.server.annotations.Remote;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.mvp.PlaceRequest;
@@ -28,6 +30,10 @@ import java.util.Map;
 public interface DesignerAssetService {
 
     public DesignerContent loadContent(Path path);
+
+
+    void updateMetadata(final Path resource,
+                        final Metadata metadata );
 
     public Map<String, String> getEditorParameters( final Path path,
                                   final String editorID,
